@@ -8,6 +8,18 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE role (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    permission  Permission[]
+)
+
+CREATE TABLE permission (
+    id SERIAL PRIMARY KEY,
+    resource VARCHAR(255) NOT NULL,
+    actions Action[]
+)
+
 CREATE TABLE workspaces (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -86,6 +98,7 @@ Task 2: Task 2, Status: In Progress, Assigned to User 1
 
 Comments
 Comment 1: Looks good to me! on Task 1 by User 2
+
 Task History
 Task 1 changed status from pending to in_progress
 

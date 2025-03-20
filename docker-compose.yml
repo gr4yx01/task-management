@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: task_mgt
+    environment:
+      POSTGRES_USER: graeyyy            # Username for PostgreSQL
+      POSTGRES_PASSWORD: pyr_hornet0101    # Password for PostgreSQL
+      POSTGRES_DB: taskmanagement
+    ports:
+      - "5432:5432"                    # Expose PostgreSQL port to the host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data across container restarts
+
+volumes:
+  postgres_data:
+    driver: local
