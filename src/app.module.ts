@@ -15,6 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from 'database/datasource';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
+import dbConfig from 'config/db.config';
 
 @Module({
   imports: [AuthModule, UsersModule, WorkspacesModule, TasksModule, CommentsModule, TaskNotificationsModule, TaskHistoryModule, UserInvitationsModule, UserWorkspacesModule, RolesModule,
@@ -33,7 +34,7 @@ import { CommonModule } from './common/common.module';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: []
+      load: [dbConfig]
     }),
     CommonModule
   ],

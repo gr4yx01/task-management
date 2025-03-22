@@ -1,14 +1,29 @@
-import { BaseModelEntity } from "src/common/base-model.entity";
-import { Column, Entity } from "typeorm";
+import { BaseModelEntity } from 'src/common/base-model.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('users')
-export class User extends BaseModelEntity {
-    @Column()
-    email: string
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column()
-    hashedPassword: string
+  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
-    @Column()
-    name: string
+  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
+  @Column()
+  email: string;
+
+  @Column()
+  hashedPassword: string;
+
+  @Column()
+  name: string;
 }

@@ -5,6 +5,7 @@ User Authentication & Management
 POST /auth/register - Register a new user.
 POST /auth/login - Login with credentials and obtain a JWT token.
 GET /auth/me - Get the current logged-in user's profile.
+
 Task Management
 POST /tasks - Create a new task (requires authentication).
 

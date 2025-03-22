@@ -12,7 +12,7 @@ export const dataSource = new DataSource({
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     port: Number(process.env.DB_PORT),
-    synchronize: isDevelopment,
+    synchronize: true,
     migrations: [process.env.DB_MIGRATIONS!],
-    entities: [process.env.DB_ENTITIES!]
+    entities: [process.env.DB_ENTITIES!],
 })
