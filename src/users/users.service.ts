@@ -7,16 +7,21 @@ import { UserModelAction } from './user.model-action';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private userModelAction: UserModelAction
-  ) {}
+  constructor(private userModelAction: UserModelAction) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<User | null> {
-    return await this.userModelAction.create({
-      createPayload: { ...createUserDto, hashedPassword: createUserDto.password },
+  async createUser(createUserDto: CreateUserDto) {
+    const user = await this.userModelAction.create({
+      createPayload: {
+        ...createUserDto,
+        hashedPassword: createUserDto.password,
+      },
       transactionOptions: {
-        useTransaction: false
-      }
+        useTransaction: false,
+      },
     });
+
+    return {
+      data: user,
+    };
   }
 }
