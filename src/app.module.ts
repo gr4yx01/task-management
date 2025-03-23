@@ -15,28 +15,38 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from 'database/datasource';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
-import dbConfig from 'config/db.config';
+import authConfig from 'config/auth.config';
 
 @Module({
-  imports: [AuthModule, UsersModule, WorkspacesModule, TasksModule, CommentsModule, TaskNotificationsModule, TaskHistoryModule, UserInvitationsModule, UserWorkspacesModule, RolesModule,
+  imports: [
+    AuthModule,
+    UsersModule,
+    WorkspacesModule,
+    TasksModule,
+    CommentsModule,
+    TaskNotificationsModule,
+    TaskHistoryModule,
+    UserInvitationsModule,
+    UserWorkspacesModule,
+    RolesModule,
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
-        ...dataSource.options
+        ...dataSource.options,
       }),
       dataSourceFactory: async () => {
-        if(!dataSource.isInitialized) {
-          return dataSource.initialize()
+        if (!dataSource.isInitialized) {
+          return dataSource.initialize();
         }
 
-        return dataSource
-      }
+        return dataSource;
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [dbConfig]
+      load: [authConfig],
     }),
-    CommonModule
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

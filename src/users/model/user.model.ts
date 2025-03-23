@@ -18,7 +18,7 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()

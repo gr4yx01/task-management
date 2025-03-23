@@ -19,7 +19,7 @@ export class CreateUserDto {
     minSymbols: 1,
     minUppercase: 1,
   })
-  password: string;
+  hashedPassword: string;
 
   @IsString()
   name: string;

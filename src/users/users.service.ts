@@ -13,7 +13,6 @@ export class UsersService {
     const user = await this.userModelAction.create({
       createPayload: {
         ...createUserDto,
-        hashedPassword: createUserDto.password,
       },
       transactionOptions: {
         useTransaction: false,
@@ -23,5 +22,9 @@ export class UsersService {
     return {
       data: user,
     };
+  }
+
+  async getUserByEmail(email: string) {
+    return await this.userModelAction.get({ email });
   }
 }
