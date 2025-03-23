@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -12,6 +13,8 @@ import IUser from 'src/common/types/user';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshModelAction } from './refresh.model-action';
 import { v4 as uuidv4 } from 'uuid';
+import { omit } from 'lodash';
+import { MoreThan } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +36,9 @@ export class AuthService {
     // hash password
     const hashedPassword = this.hashPassword(registerDto.password);
 
-    const body = { ...registerDto, hashedPassword: hashedPassword };
+    const userPayload = omit(registerDto, ['password']);
+
+    const body = { ...userPayload, hashedPassword: hashedPassword };
     // save user
     const user = await this.usersService.createUser(body);
 
@@ -42,37 +47,68 @@ export class AuthService {
     }
 
     // sign with jwt
-    const payload = { sub: user.data?.id, email: user.data?.email };
-
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('jwt.access_expiry'),
-    });
+    const accessToken = await this.generateAccessToken(user.data!);
 
     const refreshToken = await this.generateRefreshToken(user.data!);
 
     return { user: user!.data, accessToken, refreshToken };
   }
 
-  async login(loginDto: LoginDto) {}
+  async login(loginDto: LoginDto) {
+    const userExist = await this.usersService.getUserByEmail(loginDto.email);
+
+    if (!userExist) {
+      throw new NotFoundException('Account does not exist');
+    }
+
+    // verify is password is correct
+    const validPassword = this.verifyPassword(
+      loginDto.password,
+      userExist.hashedPassword,
+    );
+
+    if (!validPassword) {
+      throw new BadRequestException('Invalid Credential');
+    }
+
+    // generate access token
+    const accessToken = await this.generateAccessToken(userExist);
+
+    // generate refresh token
+    const refreshToken = await this.generateRefreshToken(userExist);
+
+    // return data
+    return { user: userExist, accessToken, refreshToken };
+  }
 
   private hashPassword(password: string) {
     const salt = +this.configService.get('bcrypt.salt');
     return bcrypt.hashSync(password, salt);
   }
 
+  async verifyPassword(password: string, hashedPassword: string) {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  async generateAccessToken(user: IUser): Promise<string> {
+    const payload = { sub: user.id, email: user.email };
+
+    return this.jwtService.sign(payload, {
+      expiresIn: this.configService.get<string>('jwt.access_expiry'),
+    });
+  }
+
   async generateRefreshToken(user: IUser) {
     // check if user has a refresh token, and time hasn't expired
     const expiry_time = new Date();
-    const refreshRecord = await this.refreshModelAction.get(
-      {
-        userId: user.id,
-      },
-      { expiry_time: { $gte: expiry_time } },
-    );
+    const refreshRecord = await this.refreshModelAction.get({
+      userId: user.id,
+      expiry_time: MoreThan(expiry_time),
+    });
 
-    console.log(refreshRecord);
-
-    // update refresh token if exist
+    if (refreshRecord) {
+      return refreshRecord.refreshToken;
+    }
 
     const refreshToken = uuidv4();
 
@@ -80,7 +116,7 @@ export class AuthService {
       expiry_time.getHours() + +this.configService.get('jwt.refresh_expiry'),
     );
 
-    // create refresh token and return
+    // create refresh token and retur
     const body = {
       userId: user.id,
       refreshToken,
