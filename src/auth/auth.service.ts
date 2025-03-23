@@ -47,11 +47,9 @@ export class AuthService {
     }
 
     // sign with jwt
-    const accessToken = await this.generateAccessToken(user.data!);
+    const tokens = await this.generateRefreshToken(user.data!);
 
-    const refreshToken = await this.generateRefreshToken(user.data!);
-
-    return { user: user!.data, accessToken, refreshToken };
+    return { user: user!.data, ...(tokens as object) };
   }
 
   async login(loginDto: LoginDto) {
@@ -71,14 +69,21 @@ export class AuthService {
       throw new BadRequestException('Invalid Credential');
     }
 
-    // generate access token
-    const accessToken = await this.generateAccessToken(userExist);
-
     // generate refresh token
-    const refreshToken = await this.generateRefreshToken(userExist);
+    const tokens = await this.generateRefreshToken(userExist);
+
+    console.log(tokens);
 
     // return data
-    return { user: userExist, accessToken, refreshToken };
+    return { user: userExist, ...(tokens as object) };
+  }
+
+  async refresh(refreshToken: string) {
+    const refreshRecord = await this.refreshModelAction.get({
+      refreshToken
+    })
+
+    console.log(refreshRecord)
   }
 
   private hashPassword(password: string) {
@@ -105,9 +110,13 @@ export class AuthService {
       userId: user.id,
       expiry_time: MoreThan(expiry_time),
     });
+    const accessToken = await this.generateAccessToken(user);
 
     if (refreshRecord) {
-      return refreshRecord.refreshToken;
+      return {
+        refreshToken: refreshRecord.refreshToken,
+        accessToken,
+      };
     }
 
     const refreshToken = uuidv4();
@@ -131,6 +140,6 @@ export class AuthService {
       },
     });
 
-    return refreshToken;
+    return { refreshToken, accessToken };
   }
 }

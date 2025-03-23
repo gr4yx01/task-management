@@ -16,6 +16,8 @@ import { dataSource } from 'database/datasource';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
 import authConfig from 'config/auth.config';
+import { AuthenticationGuard } from './auth/guard/authentication.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -49,6 +51,12 @@ import authConfig from 'config/auth.config';
     CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
+  ],
 })
 export class AppModule {}
