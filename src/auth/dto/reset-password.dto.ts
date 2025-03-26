@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -6,14 +5,11 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class ResetPasswordDto {
   @IsString()
-  @IsEmail()
-  email: string;
-
-  @Exclude()
   @IsNotEmpty()
-  @IsString()
+  token: string;
+
   @IsStrongPassword({
     minLength: 8,
     minLowercase: 1,
@@ -21,8 +17,5 @@ export class CreateUserDto {
     minSymbols: 1,
     minUppercase: 1,
   })
-  hashedPassword: string;
-
-  @IsString()
-  name: string;
+  password: string;
 }

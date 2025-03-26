@@ -15,6 +15,8 @@ import { RefreshModelAction } from './refresh.model-action';
 import { v4 as uuidv4 } from 'uuid';
 import { omit } from 'lodash';
 import { MoreThan } from 'typeorm';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -72,19 +74,47 @@ export class AuthService {
     // generate refresh token
     const tokens = await this.generateRefreshToken(userExist);
 
-    console.log(tokens);
-
     // return data
     return { user: userExist, ...(tokens as object) };
   }
 
   async refresh(refreshToken: string) {
-    const refreshRecord = await this.refreshModelAction.get({
-      refreshToken
-    })
+    const refreshRecordExist = await this.refreshModelAction.get(
+      {
+        refreshToken,
+      },
+      {},
+      ['user'],
+    );
 
-    console.log(refreshRecord)
+    if (!refreshRecordExist) {
+      throw new NotFoundException('Invalid refresh token');
+    }
+
+    // return refresh alongside access token
+    return this.generateRefreshToken(refreshRecordExist.user);
   }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    // verify token
+
+    // check if user exist
+
+    // change password
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    // generate reset token
+    const user = await this.usersService.getUserByEmail(forgotPasswordDto.email)
+
+    if(!user) {
+      throw new NotFoundException('No such account')
+    }
+
+    // send email
+  }
+
+  async changePassword() {}
 
   private hashPassword(password: string) {
     const salt = +this.configService.get('bcrypt.salt');
@@ -141,5 +171,11 @@ export class AuthService {
     });
 
     return { refreshToken, accessToken };
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.usersService.getUserById(userId);
+
+    return { data: user };
   }
 }

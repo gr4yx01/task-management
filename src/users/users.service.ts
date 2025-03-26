@@ -27,4 +27,8 @@ export class UsersService {
   async getUserByEmail(email: string) {
     return await this.userModelAction.get({ email });
   }
+
+  async getUserById(id: string) {
+    return await this.userModelAction.get({ id });
+  }
 }

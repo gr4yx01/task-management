@@ -18,6 +18,7 @@ import { CommonModule } from './common/common.module';
 import authConfig from 'config/auth.config';
 import { AuthenticationGuard } from './auth/guard/authentication.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { APP_GUARD } from '@nestjs/core';
       load: [authConfig],
     }),
     CommonModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [
