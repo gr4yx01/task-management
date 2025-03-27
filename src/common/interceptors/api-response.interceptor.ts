@@ -18,9 +18,11 @@ export class APIResponseInterceptor implements NestInterceptor {
         const data_ =
           data instanceof Error ? null : data?.data ? data.data : data;
 
-          const processedData = data_ ? this.removePrivateField(data_, context) : null;
+        const processedData = data_
+          ? this.removePrivateField(data_, context)
+          : null;
 
-          const success = !(data instanceof Error) && data_ !== null;
+        const success = !(data instanceof Error) && data_ !== null;
         return {
           success,
           data: processedData || undefined,
@@ -30,13 +32,34 @@ export class APIResponseInterceptor implements NestInterceptor {
     );
   }
 
-  private removePrivateField(data: unknown, context: ExecutionContext) {
+  private removePrivateField(
+    data: unknown,
+    context: ExecutionContext,
+  ): unknown {
+    if (data === null || typeof data !== 'object') {
+      return data;
+    }
+
+    if (data instanceof Date) {
+      return data;
+    }
+
+    if (Array.isArray(data)) {
+      return data.map((item) => this.removePrivateField(item, context));
+    }
+
     const result = { ...(data as object) };
 
     const privateFields = [...DEFAULT_PRIVATE_FIELDS];
 
     for (const field of privateFields) {
       delete result[field];
+    }
+
+    for (const key in result) {
+      if (result[key] !== null && typeof result[key] === 'object') {
+        result[key] = this.removePrivateField(result[key], context);
+      }
     }
 
     return result;

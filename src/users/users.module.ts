@@ -10,6 +10,6 @@ import { UserModelAction } from './user.model-action';
   imports: [TypeOrmModule.forFeature([User, EntitySchema])],
   controllers: [UsersController],
   providers: [UsersService, UserModelAction],
-  exports: [UsersService]
+  exports: [UsersService, UserModelAction],
 })
 export class UsersModule {}

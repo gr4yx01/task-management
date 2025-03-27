@@ -5,6 +5,9 @@ import { LoginDto } from './dto/login.dto';
 import { SkipAuth } from './decorators/skipAuth.decorator';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { Request } from 'express';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { request } from 'http';
 
 @Controller('auth')
 export class AuthController {
@@ -28,18 +31,32 @@ export class AuthController {
     return this.authService.refresh(refreshDto.refreshToken);
   }
 
-  @Post()
+  @SkipAuth()
+  @Post('reset-password')
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto)
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @Post()
-  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto)
+  @SkipAuth()
+  @Post('forgot-password')
+  forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Req() request: Request,
+  ) {
+    const referer = request.headers.referer;
+
+    return this.authService.forgotPassword(
+      forgotPasswordDto,
+      referer as string,
+    );
   }
 
-  @Post()
-  changePassword() {}
+  @Post('change-password')
+  changePassword(@Req() request, @Body() changePasswordDto: ChangePasswordDto) {
+    const loggedInUserId = request.user.sub;
+
+    return this.authService.changePassword(changePasswordDto, loggedInUserId);
+  }
 
   @Get('me')
   userProfile(@Req() request) {

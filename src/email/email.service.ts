@@ -11,8 +11,11 @@ export class EmailService {
   constructor(private readonly configService: ConfigService) {
     this.transporter = createTransport({
       host: this.configService.get('SMTP_HOST'),
-      port: +this.configService.get('SMTP_PORT') || 2525,
-      secure: this.configService.get('SMTP_SECURE'),
+      port: +this.configService.get('SMTP_PORT'),
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+      },
       auth: {
         user: this.configService.get('SMTP_USER'),
         pass: this.configService.get('SMTP_PASSWORD'),
@@ -21,8 +24,20 @@ export class EmailService {
   }
 
   async sendMail(payload: Email) {
-    const { from, to, subject, html } = payload 
+    const { to, subject, text, html } = payload;
 
-    
+    try {
+      const info = await this.transporter.sendMail({
+        from: `"No Reply" <${this.configService.get('EMAIL_FROM') ?? ''}>`,
+        to,
+        subject,
+        text,
+        html,
+      });
+
+      return { messageId: info.messageId }
+    } catch (error) {
+      throw new Error(`Email sending failed: ${error.message}`);
+    }
   }
 }

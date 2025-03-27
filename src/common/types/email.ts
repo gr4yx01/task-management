@@ -1,8 +1,8 @@
 interface Email {
-    from: string
-    to: string
-    subject: string
-    html: any
+  html?: any;
+  to: string;
+  subject: string;
+  text: string;
 }
 
-export default Email
+export default Email;
