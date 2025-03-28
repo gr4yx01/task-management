@@ -1,4 +1,4 @@
-import { BaseEntityActionModel } from "src/common/abstract-model-action";
+import { BaseEntityActionModel } from "@/common/abstract-model-action";
 import { User } from "./model/user.model";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";

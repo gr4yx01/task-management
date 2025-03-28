@@ -1,23 +1,8 @@
-import { BaseModelEntity } from 'src/common/base-model.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { BaseModelEntity } from '@/common/base-model.entity';
+import { Column, Entity } from 'typeorm';
 
 @Entity('users')
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
-
+export class User extends BaseModelEntity {
   @Column({ unique: true })
   email: string;
 

@@ -6,10 +6,9 @@ import {
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import IUser from 'src/common/types/user';
+import IUser from '@/common/types/user';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshModelAction } from './refresh.model-action';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,14 +16,15 @@ import { omit } from 'lodash';
 import { MoreThan } from 'typeorm';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { EmailService } from 'src/email/email.service';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import { removeTrailingSlashFromUrl } from 'src/helpers/remove-trailing-slash';
-import { UserModelAction } from 'src/users/user.model-action';
-import * as SYS_MSG from 'src/common/system-messages';
+import { removeTrailingSlashFromUrl } from '@/helpers/remove-trailing-slash';
+import { UserModelAction } from '@/users/user.model-action';
+import * as SYS_MSG from '@/common/system-messages';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UsersService } from '@/users/users.service';
+import { EmailService } from '@/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +46,7 @@ export class AuthService {
     const userExist = await this.usersService.getUserByEmail(registerDto.email);
 
     if (userExist) {
-      throw new BadRequestException('Account already Exist');
+      throw new BadRequestException(SYS_MSG.ACCOUNT_EXISTS);
     }
 
     // hash password
@@ -59,7 +59,7 @@ export class AuthService {
     const user = await this.usersService.createUser(body);
 
     if (!user) {
-      throw new InternalServerErrorException('User was not created');
+      throw new InternalServerErrorException(SYS_MSG.ACCOUNT_NOT_CREATED);
     }
 
     // sign with jwt
@@ -76,7 +76,7 @@ export class AuthService {
     const userExist = await this.usersService.getUserByEmail(loginDto.email);
 
     if (!userExist) {
-      throw new NotFoundException('Account does not exist');
+      throw new NotFoundException(SYS_MSG.ACCOUNT_DOES_NOT_EXIST);
     }
 
     // verify is password is correct
@@ -86,7 +86,7 @@ export class AuthService {
     );
 
     if (!validPassword) {
-      throw new BadRequestException('Invalid Credential');
+      throw new BadRequestException(SYS_MSG.INVALID_CREDENTIAL);
     }
 
     // generate refresh token
@@ -106,7 +106,7 @@ export class AuthService {
     );
 
     if (!refreshRecordExist) {
-      throw new NotFoundException('Invalid refresh token');
+      throw new NotFoundException(SYS_MSG.INVALID_TOKEN);
     }
 
     // return refresh alongside access token
@@ -118,14 +118,14 @@ export class AuthService {
     const payload = await this.jwtService.verify(resetPasswordDto.token);
 
     if (!payload) {
-      throw new BadRequestException('Invalid token');
+      throw new BadRequestException(SYS_MSG.INVALID_TOKEN);
     }
 
     // check if user exist
     const userExist = await this.usersService.getUserById(payload.userId);
 
     if (!userExist) {
-      throw new NotFoundException('No such account found');
+      throw new NotFoundException(SYS_MSG.ACCOUNT_DOES_NOT_EXIST);
     }
 
     // change password
@@ -153,7 +153,7 @@ export class AuthService {
     );
 
     if (!user) {
-      throw new NotFoundException('No such account');
+      throw new NotFoundException(SYS_MSG.ACCOUNT_DOES_NOT_EXIST);
     }
 
     const payload = {
@@ -205,7 +205,7 @@ export class AuthService {
     const user = await this.usersService.getUserById(loggedInUserId);
 
     if (!user) {
-      throw new NotFoundException('No such account');
+      throw new NotFoundException(SYS_MSG.ACCOUNT_DOES_NOT_EXIST);
     }
 
     const validPassword = await this.verifyPassword(
